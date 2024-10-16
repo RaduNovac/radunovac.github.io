@@ -26,16 +26,29 @@
               <a class="py-2 text-dark text-decoration-none" href="contact.html">Contact</a>
           </nav>
         </div>
-        <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
-          <h1 class="display-4 fw-normal">About me:</h1>
+        <div class="py-5 text-center">
+          <h1 class="display-5 fw-bold">About me</h1>
+          <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">My name is Radu and i am <script>
+                var eta;
+                var mese = new Date().getMonth();
+                var giorno = new Date().getDate();
+                var anno = new Date().getFullYear();
+                
+                if (mese < 0 || (mese === 0 && giorno < 23)) { // Gennaio è il mese 0
+                  eta = anno - 1994 - 1;
+                } else {
+                  eta = anno - 1994;
+                }
+                
+                document.write(eta);
+            </script> years old. I studied computer science in high school and in university and i am currently finishing my degree in computer science. </p>
+            <p class="lead mb-4">I love computer science and everything thar revolves around it, in 2023 i teached it in the locel high school and i really enjoyed the experience.</p>
+            <p class="lead mb-4">Currently i want do understand what i want to do in the IT world.</p>
+          </div>
         </div>
       </header>
       <main>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
         <br>
         <br>
         <br>

@@ -9,7 +9,7 @@ body {
 }
 
 .container {
-  flex: 1; /* Permette al contenuto di riempire lo spazio disponibile */
+  flex: 1; /* Questo permette al contenuto di espandersi e mantenere il footer al fondo */
   max-width: 960px;
 }
     
@@ -17,6 +17,9 @@ body {
     max-width: 700px;
   }
 
+.container {
+    flex: 1; 
+  }
   
 .footer{
     position: fixed;

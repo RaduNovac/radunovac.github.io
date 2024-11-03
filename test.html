@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Code Viewer - Dark Theme</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        .container {
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            background-color: #252526;
+        }
+
+        .code-container {
+            display: flex;
+            background-color: #1e1e1e;
+            border-radius: 4px;
+            overflow: auto;
+        }
+
+        .line-numbers {
+            padding: 1em;
+            border-right: 1px solid #333;
+            background-color: #252526;
+            text-align: right;
+            color: #858585;
+            user-select: none;
+            min-width: 2em;
+        }
+
+        .code-content {
+            padding: 1em;
+            margin: 0;
+            white-space: pre;
+            font-family: 'Consolas', monospace;
+            min-width: 100%;
+            color: #d4d4d4;
+        }
+
+        /* Sintassi C++ */
+        .code-content .keyword {
+            color: #569cd6;  /* blu per le keyword */
+        }
+
+        .code-content .type {
+            color: #4ec9b0;  /* verde acqua per i tipi */
+        }
+
+        .code-content .string {
+            color: #ce9178;  /* arancione chiaro per le stringhe */
+        }
+
+        .code-content .comment {
+            color: #6a9955;  /* verde per i commenti */
+        }
+
+        .code-content .number {
+            color: #b5cea8;  /* verde chiaro per i numeri */
+        }
+
+        .code-content .preprocessor {
+            color: #c586c0;  /* viola per le direttive preprocessore */
+        }
+
+        .code-content .function {
+            color: #dcdcaa;  /* giallo per le funzioni */
+        }
+
+        .code-content .operator {
+            color: #d4d4d4;  /* bianco per gli operatori */
+        }
+
+        #loader {
+            text-align: center;
+            padding: 20px;
+            color: #d4d4d4;
+        }
+
+        #error {
+            color: #f14c4c;
+            padding: 10px;
+            display: none;
+        }
+
+        .copy-button {
+            position: absolute;
+            right: 30px;
+            top: 30px;
+            padding: 5px 10px;
+            background-color: #333;
+            color: #d4d4d4;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: #444;
+        }
+
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #424242;
+            border-radius: 6px;
+            border: 3px solid #1e1e1e;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #4f4f4f;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="copyButton" class="copy-button" onclick="copyCode()">
+            Copy Code
+        </button>
+        <div id="loader">Loading...</div>
+        <div id="error"></div>
+        <div id="codeContainer" class="code-container" style="display: none;">
+            <div class="line-numbers" id="lineNumbers"></div>
+            <code class="code-content" id="codeContent"></code>
+        </div>
+    </div>
+    <div id="successMessage" class="success-message">Code copied!</div>
+
+    <script>
+        // Imposta qui l'URL del codice
+        const githubUrl = 'https://github.com/RaduNovac/asd/blob/main/3_bilanciato/main.cpp';
+
+        function convertToRawUrl(url) {
+            return url
+                .replace('github.com', 'raw.githubusercontent.com')
+                .replace('/blob/', '/');
+        }
+
+        function highlightCode(code) {
+            // Keywords C++
+            const keywords = ['auto', 'break', 'case', 'class', 'const', 'continue', 'default', 'do', 
+                            'else', 'enum', 'explicit', 'export', 'extern', 'for', 'friend', 'goto',
+                            'if', 'inline', 'namespace', 'new', 'private', 'protected', 'public',
+                            'register', 'return', 'sizeof', 'static', 'struct', 'switch', 'template',
+                            'this', 'throw', 'try', 'typedef', 'typename', 'union', 'using', 'virtual',
+                            'volatile', 'while'];
+
+            // Tipi C++
+            const types = ['bool', 'char', 'double', 'float', 'int', 'long', 'short', 'signed',
+                         'unsigned', 'void', 'wchar_t', 'string', 'vector'];
+
+            let highlightedCode = code
+                // Evidenzia i commenti
+                .replace(/\/\/.*$/gm, match => `<span class="comment">${match}</span>`)
+                .replace(/\/\*[\s\S]*?\*\//gm, match => `<span class="comment">${match}</span>`)
+                // Evidenzia le stringhe
+                .replace(/"([^"\\]|\\.)*"/g, match => `<span class="string">${match}</span>`)
+                // Evidenzia i numeri
+                .replace(/\b\d+\.?\d*\b/g, match => `<span class="number">${match}</span>`)
+                // Evidenzia le direttive preprocessore
+                .replace(/#\w+/g, match => `<span class="preprocessor">${match}</span>`)
+                // Evidenzia le keywords
+                .replace(new RegExp(`\\b(${keywords.join('|')})\\b`, 'g'), 
+                        match => `<span class="keyword">${match}</span>`)
+                // Evidenzia i tipi
+                .replace(new RegExp(`\\b(${types.join('|')})\\b`, 'g'), 
+                        match => `<span class="type">${match}</span>`)
+                // Evidenzia le funzioni
+                .replace(/\b\w+(?=\s*\()/g, match => `<span class="function">${match}</span>`);
+
+            return highlightedCode;
+        }
+
+        async function loadCode() {
+            const loader = document.getElementById('loader');
+            const error = document.getElementById('error');
+            const codeContainer = document.getElementById('codeContainer');
+            const lineNumbers = document.getElementById('lineNumbers');
+            const codeContent = document.getElementById('codeContent');
+
+            try {
+                const rawUrl = convertToRawUrl(githubUrl);
+                const response = await fetch(rawUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch code');
+                }
+
+                const code = await response.text();
+                
+                // Create line numbers
+                const lines = code.split('\n');
+                lineNumbers.innerHTML = lines
+                    .map((_, i) => `<div>${i + 1}</div>`)
+                    .join('');
+
+                // Set code content with syntax highlighting
+                codeContent.innerHTML = highlightCode(code);
+
+                // Show code container
+                codeContainer.style.display = 'flex';
+            } catch (err) {
+                error.textContent = 'Error loading code: ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        async function copyCode() {
+            const code = document.getElementById('codeContent').textContent;
+            try {
+                await navigator.clipboard.writeText(code);
+                const successMessage = document.getElementById('successMessage');
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 2000);
+            } catch (err) {
+                const error = document.getElementById('error');
+                error.textContent = 'Failed to copy code';
+                error.style.display = 'block';
+            }
+        }
+
+        // Carica il codice appena la pagina è pronta
+        document.addEventListener('DOMContentLoaded', loadCode);
+    </script>
+</body>
+</html>
